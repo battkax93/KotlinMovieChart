@@ -21,91 +21,54 @@ import sunny.kotlinmoviechart.network.api.GithubApi
 import sunny.kotlinmoviechart.network.model.Github
 import kotlin.coroutines.experimental.coroutineContext
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MainContract.mainView {
 
+    private lateinit var ui: MainUI
     private lateinit var present: MainContract.mainPresent
     private lateinit var api: GithubApi
-    lateinit var ctx: Context
+    private lateinit var user: Github
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        setContentView(R.layout.activity_main)
-        MovieUI().setContentView(this)
+        initVar()
+        ui.setContentView(this)
+        action()
     }
 
-    /*  override fun run() {
-          present = MainPresent(this)
-          api = GithubApi()
-          b_test.setOnClickListener {
-              val username = et_test.text.toString()
-              Log.d("cek", username)
-              Log.d("FLOW", "MainAct.run")
-              present.getData(api, username)
-          }
-      }
+    private fun initVar() {
+        present = MainPresent(this)
+        api = GithubApi()
+        ui = MainUI()
+        user = Github()
+    }
 
-      override fun init(user: Github) {
-          Glide.with(this).load(user.avatarUrl).into(image)
-          username.text = user.name.toString()
-          company.text = user.company.toString()
-      }*/
-
-
-    class MovieUI : AnkoComponent<MainActivity>, MainContract.mainView {
-
-        lateinit var etUsername: EditText
-        lateinit var bId: Button
-        lateinit var iv: ImageView
-        lateinit var un: TextView
-        lateinit var cp: TextView
-        lateinit var present: MainContract.mainPresent
-        lateinit var api: GithubApi
-
-        override fun createView(ui: AnkoContext<MainActivity>): View = with(ui) {
-            verticalLayout {
-                gravity = Gravity.CENTER_VERTICAL
-                lparams(matchParent, wrapContent)
-                padding = dip(16)
-
-                etUsername = editText {
-                    hint = "input your username"
-                }.lparams(matchParent, wrapContent)
-
-                bId = button {
-                    text = "haloo"
-                    onClick {
-                        toast("${etUsername.text}")
-                        run("${etUsername.text}")
-                    }
-                }.lparams(matchParent, wrapContent)
-
-                verticalLayout {
-                    lparams(matchParent, wrapContent)
-                    padding = dip(10)
-
-                    iv = imageView().lparams(matchParent, wrapContent)
-                    un = textView().lparams(matchParent, wrapContent)
-                    cp = textView().lparams(matchParent, wrapContent)
-                }
+    private fun action() {
+        with(ui) {
+            bId.text = "check"
+            bId.backgroundColor = Color.CYAN
+            bId.onClick {
+                toast("${etUsername.text}")
+                run("${etUsername.text}", applicationContext)
             }
         }
-        
-        override fun run(un: String) {
-            present = MainPresent(this)
+    }
+
+    override fun run(un: String, ctx: Context) {
+        with(ui) {
+            present = MainPresent(this@MainActivity)
             api = GithubApi()
             Log.d("cek", un)
             Log.d("FLOW", "MainAct.run")
-            present.getData(api, un)
-        }
-
-        override fun init(user: Github) {
-            Picasso.get().load(user.avatarUrl).into(iv)
-            un.text = user.name.toString()
-            cp.text = user.company.toString()
+            present.getData(api, un, ctx)
         }
     }
+
+    override fun updateUi(user: Github) {
+        with(ui) {
+            Glide.with(this@MainActivity).load(user?.avatarUrl).into(iv)
+            un.text = user?.name
+            cp.text = user?.company
+        }
+    }
+
 }
-
-
-
-
